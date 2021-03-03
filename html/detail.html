@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>detail</title>
+    <link rel="stylesheet" href="../css/stylesheet.css">
+    <link rel="stylesheet" href="../css/detail.css">
+    <link rel="stylesheet" href="../css/index.css">\
+    <link rel="stylesheet" href="./font_2167033_rafbn6bqkd9/iconfont.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="top">
+            <div class="logo"><img src="../images/logo.png" alt=""></div>
+            <div class="logo_right">
+                <input type="text" id="search" placeholder="请输入想要的商品">
+                <div class="search"><span class="search_icon"></span><span class="search_text">搜索</span></div>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="box">
+    <div class="back">返回</div>
+    <ul class="imgList"></ul>
+    <div class="left">
+        <div class="content"></div>
+    </div>
+    <div class="right">
+        <h2></h2>
+        <p class="desc_"></p>
+        <p class="price_"></p>
+        <p class="mark_"></p>
+        <div class="button">添加到购物车</div>
+        <div class="shopCar iconfont">&#xe621;</div>
+        <div class="largeImg"></div>
+    </div>
+</div>
+<div class="addRem">添加购物车成功</div>
+<h3>相似商品推荐</h3>
+<div class="allGoods"></div>
+<script src="../js/underscore.js"></script>
+<!--加载页面,放大镜-->
+<script>
+    let left = document.querySelector('.left');
+    let right = document.querySelector('.right')
+    let h2 = document.querySelector('h2');
+    let desc = document.querySelector('.desc_');
+    let price = document.querySelector('.price_');
+    let mark = document.querySelector('.mark_');
+    let back = document.querySelector('.back');
+    let largeImg = document.querySelector('.largeImg');
+    let imgList = document.querySelector('.imgList');
+    back.onclick = function () {
+        let idArr = sessionStorage.getItem('id').split(',');
+        console.log(idArr)
+        if (idArr.length == 1) {
+            location.href = 'index.html';
+        }else{
+            idArr.pop();
+            sessionStorage.setItem('id', idArr);
+            location.href='detail.html';
+        }
+    }
+    $ajax_({
+        url: baseUrl + '/api/detail',
+        method: 'GET',
+        data: {goodId: sessionStorage.getItem('id').split(',')[sessionStorage.getItem('id').split(',').length - 1]},
+        success: (data) => {
+            data = JSON.parse(data);
+            render(data)
+            h2.innerHTML = data[0].title;
+            mark.innerHTML = data[0].mack;
+            desc.innerHTML = data[0].supplier;
+            price.innerHTML = '￥' + data[0].price;
+            let imageArr = JSON.parse(data[0].imgs);
+            let img = document.createElement('img');
+            img.src = imageArr[0];
+            h2.innerHTML = data[0].title;
+            mark.innerHTML = data[0].mack;
+            left.appendChild(img);
+            for (let i = 0; i < imageArr.length; i++) {
+                let images = document.createElement('img');
+                images.src = imageArr[i];
+                let li = document.createElement('li');
+                li.addEventListener('click', picChange);
+                li.appendChild(images);
+                imgList.appendChild(li)
+            }
+        }
+    })
+    let content = document.querySelector('.content');
+    left.onmouseover = function () {
+        largeImg.style.display = 'block';
+        content.style.display = 'block';
+        largeImg.style.backgroundImage = `url(${this.children[1].src})`;
+    }
+    left.onmouseleave = function () {
+        largeImg.style.display = 'none';
+        content.style.display = 'none';
+    }
+    content.onmousedown = function (event) {
+        let contentLeft = content.offsetLeft;
+        let contentTop = content.offsetTop;
+        let initTop = event.pageY;
+        let initLeft = event.pageX;
+        document.onmousemove = function (e) {
+            let distanceX = e.pageX - initLeft + contentLeft;
+            let distanceY = e.pageY - initTop + contentTop;
+            if (distanceX > 100) {
+                distanceX = 100
+                content.style.left = '100px';
+            } else if (distanceX < 0) {
+                distanceX = 0
+                content.style.left = '0px';
+            } else {
+                content.style.left = distanceX + 'px';
+            }
+            if (distanceY > 100) {
+                distanceY = 100
+                content.style.Top = '100px';
+            } else if (distanceY < 0) {
+                distanceY = 0
+                content.style.Top = '0px';
+            } else {
+                content.style.top = distanceY + 'px';
+            }
+            largeImg.style.backgroundPositionX = -(distanceX) * 3 + 'px';
+            largeImg.style.backgroundPositionY = -(distanceY) * 3 + 'px';
+        }
+        document.onmouseup = function () {
+            left.onmousedown = document.onmousemove = null;
+        }
+    }
+
+    function picChange() {
+        left.children[1].src = this.children[0].src;
+        for (let i = 0; i < this.parentElement.children.length; i++) {
+            this.parentElement.children[i].style.border = '1px solid #000';
+        }
+        this.style.border = '2px solid rgb(128, 0, 128)';
+    }
+</script>
+<!--相似商品推荐-->
+<script>
+    let allGoods = document.querySelector('.allGoods');
+
+    function render(data) {
+        $ajax_({
+            url: baseUrl + '/api/search',
+            method: 'GET',
+            data: {
+                word: data[0].type_two,
+            },
+            success: function (data) {
+                data = JSON.parse(data);
+                let template = '';
+                let ul = document.createElement('ul');
+                ul.className = 'container commodities';
+                for (let i = 0; i < data.length; i++) {
+                    template += `<li data-id="${data[i].Id}" onclick="toDetail(${data[i].Id})">
+                            <img src="${data[i].img_list_url}" alt="">
+                            <p class="desc">${data[i].title}</p>
+                            <p><span class="price">￥${data[i].price}</span><span class="price_right">${data[i].mack}</span></p>
+                            </li>`;
+                }
+                ul.innerHTML = template;
+                allGoods.appendChild(ul);
+            }
+        })
+    }
+
+    function toDetail(id) {
+        let idArr = [sessionStorage.getItem('id')];
+        idArr.push(id);
+        sessionStorage.setItem('id', idArr);
+        sessionStorage.setItem('url', 'detail.html');
+        location.href = 'loading.html';
+    }
+</script>
+<!--购物车-->
+<script>
+    let addShop = document.querySelector('.button');
+    let shopCar=document.querySelector('.shopCar');
+    let addRem=document.querySelector('.addRem');
+    shopCar.onclick=function(){
+        sessionStorage.setItem('url','shopCar.html');
+        location.href='loading.html'
+    }
+    addShop.onclick = function () {
+        if (!sessionStorage.getItem('token')) {
+            alert('请先登录');
+            setTimeout(() => {
+                sessionStorage.setItem('url', 'login.html');
+                location.href = 'loading.html';
+            }, 750)
+            return
+        }
+        $ajax_({
+            url:baseUrl+'/api/add',
+            method:'GET',
+            data:{
+                goodId: sessionStorage.getItem('id').split(',')[sessionStorage.getItem('id').split(',').length-1],
+                token:sessionStorage.getItem('token'),
+            },
+            success:function (data) {
+                data= JSON.parse(data);
+                console.log(data)
+                if(data.code){
+                    addRem.style.display='block';
+                    setTimeout(()=>addRem.style.display='none',1500);
+                };
+            }
+        })
+    }
+</script>
+</body>
+</html>

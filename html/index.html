@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link rel="stylesheet" href="../css/stylesheet.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/index_tabPic.css">
+</head>
+<style>
+    .register {
+        color: #000;
+        border-bottom: none;
+    }
+
+    header {
+        position: relative;
+    }
+
+    .index {
+        color: #6e496e;
+        border-bottom: 2px solid #6e496e;
+    }
+
+    h2 {
+        width: 1200px;
+        margin: 5px auto;
+        text-align: center;
+    }
+
+    .header {
+        position: fixed;
+        background-color: #ffffff;
+        z-index: 999;
+        left: 0;
+        top: -140px;
+        animation: top .5s;
+    }
+
+    @keyframes top {
+        from {
+            top: -200px
+        }
+        to {
+            top: -140px
+        }
+    }
+
+    .username {
+        width: 300px;
+        height: 50px;
+        position: absolute;
+        top: 50px;
+        left: 30%;
+        font-size: 20px;
+        color: #5daf34
+    }
+
+    .page {
+        margin: 0 auto;
+        width: 1200px;
+        height: 30px;
+        text-align: center;
+    }
+</style>
+<body>
+<header>
+    <div class="container">
+        <div class="top">
+            <div class="logo"><img src="../images/logo.png" alt=""></div>
+            <div class="logo_right">
+                <input type="text" id="search" placeholder="请输入想要的商品">
+                <div class="search"><span class="search_icon iconfont">&#xe65a;</span><span
+                        class="search_text">搜索</span></div>
+                <ul class="search_content"></ul>
+            </div>
+        </div>
+        <div class="tab">
+            <ul>
+                <li class="index">首页</li>
+                <li class="login">登录</li>
+                <li class="register">注册</li>
+            </ul>
+        </div>
+        <div class="username"></div>
+    </div>
+</header>
+<div class="container  firstItem"></div>
+<main class="container">
+    <div class="view">
+        <button class="btn_left button iconfont">&#xe7ec;</button>
+        <button class="btn_right button iconfont">&#xe7eb;</button>
+        <ul class="ul">
+            <li><img src="../images/a.jpg" alt=""></li>
+            <li><img src="../images/b.jpg" alt=""></li>
+            <li><img src="../images/c.jpg" alt=""></li>
+            <li><img src="../images/d.jpg" alt=""></li>
+            <li><img src="../images/e.jpg" alt=""></li>
+        </ul>
+        <div class="circles">
+        </div>
+    </div>
+</main>
+<div class="allGoods">
+</div>
+<ul class="type_two">
+</ul>
+<div class="toTop">回到顶部</div>
+<!--页面切换-->
+<script src="../js/underscore.js"></script>
+<script src="../js/pageChange.js"></script>
+<!--加载页面和点击切换-->
+<script>
+    let firstItem = document.querySelector('.firstItem');
+    let type_two = document.querySelector('.type_two');
+    let allGoods = document.querySelector('.allGoods');
+    let username = document.querySelector('.username');
+    let main = document.querySelector('main');
+    //登录后的变化
+    if (sessionStorage.getItem('token')) {
+        username.innerHTML = `欢迎 ${sessionStorage.getItem('username')}`;
+        setTimeout(() => username.innerHTML = '', 1500)
+        login.onclick = register.onclick = null;
+        login.innerHTML = '购物车';
+        login.onclick = function () {
+            sessionStorage.setItem('url', 'shopCar.html');
+            location.href = 'loading.html';
+        }
+        register.innerHTML = '退出登录';
+        register.onclick = function () {
+            sessionStorage.removeItem('token');
+            username.innerHTML = `${sessionStorage.getItem('username')}已经退出登录`;
+            setTimeout(() => location.href = 'index.html', 1500)
+        }
+    }
+    //初始化页面
+    $ajax_({
+        url: baseUrl + '/api/getTypeOne',
+        method: 'GET',
+        data: {},
+        success: function (data) {
+            data = JSON.parse(data);
+            for (let i = 0; i < data.length; i++) {
+                let li = document.createElement('li');
+                li.innerHTML = data[i];
+                li.addEventListener('click', tabChange);
+                firstItem.appendChild(li);
+            }
+        }
+    });
+    let page = 1;
+    $ajax_({
+        url: baseUrl + '/api/goodList',
+        method: 'GET',
+        data: {
+            page: page,
+        },
+        success: function (data) {
+            data = JSON.parse(data);
+            renderType_one(data);
+            window.addEventListener('scroll', loadingPage);
+        }
+    })
+
+    function loadingPage() {
+        if (pageYOffset + 1 >= allGoods.offsetTop + allGoods.offsetHeight - innerHeight) {
+            page++;
+            console.log(page)
+            window.removeEventListener('scroll', loadingPage);
+            $ajax_({
+                url: baseUrl + '/api/goodList',
+                method: 'GET',
+                data: {
+                    page: page,
+                },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    setTimeout(() => {
+                        let div = document.querySelectorAll('.page');
+                        div.forEach((item) => item.style.display = 'none');
+                        if (!data[0]) {
+                            div[div.length - 1].style.display = 'block';
+                            div[div.length - 1].innerHTML = '我是有底线的!';
+                        } else {
+                            renderType_one(data);
+                            window.addEventListener('scroll', loadingPage);
+                        }
+                    }, 1500);
+                }
+            })
+        }
+    }
+
+    function renderType_one(data) {
+        let template = '';
+        let ul = document.createElement('ul');
+        ul.className = 'container commodities';
+        for (let i = 0; i < data.length; i++) {
+            template += `<li data-id="${data[i].Id}" onclick="toDetail(${data[i].Id})">
+                            <img src="${data[i].img_list_url}" alt="">
+                            <p class="desc">${data[i].title}</p>
+                            <p><span class="price">￥${data[i].price}</span><span class="price_right">${data[i].mack}</span></p>
+                            </li>`;
+        }
+        ul.innerHTML = template;
+        let div = document.createElement('div');
+        div.className = 'page';
+        div.style.display = 'block';
+        div.innerHTML = '正在加载...';
+        allGoods.appendChild(ul);
+        allGoods.appendChild(div);
+    }
+
+    function tabChange() {
+        window.removeEventListener('scroll', loadingPage)
+        main.style.display = 'none';
+        type_two.style.display = 'block';
+        for (let i = 0; i < this.parentElement.children.length; i++) {
+            this.parentElement.children[i].style.backgroundColor = '';
+            this.parentElement.children[i].style.color = '#000';
+        }
+        this.style.backgroundColor = 'rgb(128, 0, 128)';
+        this.style.color = '#fff';
+        let temp = this.innerHTML;
+        $ajax_({
+            url: baseUrl + '/api/goodList',
+            method: 'GET',
+            data: {
+                type_one: temp,
+            },
+            success: function (data) {
+                data = JSON.parse(data);
+                let arrTypeTwo = [];
+                let newData = [];
+                data.forEach((item) => {
+                    if (arrTypeTwo.indexOf(item.type_two) == -1) {
+                        arrTypeTwo.push(item.type_two);
+                    }
+                })
+                arrTypeTwo.forEach((item) => {
+                    let obj = {};
+                    obj.kind = item;
+                    obj.list = [];
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i].type_two == item) {
+                            obj.list.push(data[i]);
+                        }
+                    }
+                    newData.push(obj);
+                })
+                renderType_two(newData);
+            }
+        })
+    }
+
+    function renderType_two(data) {
+        allGoods.innerHTML = '';
+        type_two.innerHTML = '';
+        data.forEach((item) => {
+            let li = document.createElement('li');
+            li.innerHTML = item.kind;
+            li.addEventListener('click', kindChange)
+            type_two.appendChild(li);
+            let h2 = document.createElement('h2');
+            h2.innerHTML = item.kind;
+            let ul = document.createElement('ul');
+            ul.appendChild(h2);
+            ul.className = 'container commodities';
+            for (let i = 0; i < item.list.length; i++) {
+                let lis = document.createElement('li');
+                lis.addEventListener('click', detail);
+                lis.setAttribute('data-id', item.list[i].Id);
+                let img = document.createElement('img');
+                img.src = item.list[i].img_list_url;
+                let p1 = document.createElement('p');
+                p1.innerHTML = item.list[i].title;
+                let p2 = document.createElement('p');
+                p2.innerHTML = `<span class="price">￥${item.list[i].price}</span><span class="price_right">${item.list[i].mack}</span>`;
+                lis.appendChild(img);
+                lis.appendChild(p1);
+                lis.appendChild(p2);
+                ul.appendChild(lis);
+            }
+            allGoods.appendChild(ul);
+        })
+    }
+
+</script>
+<!--轮播图-->
+<script>
+    var lis = document.querySelectorAll('.ul li');
+    var circles = document.querySelector('.circles');
+    var ul = document.querySelector('.ul');
+    var view = document.querySelector('.view');
+    var btn_left = document.querySelector('.btn_left');
+    var btn_right = document.querySelector('.btn_right');
+    //生成小圆点 ,添加已经设置好样式的类名
+    for (let i = 0; i < lis.length; i++) {
+        var circle = document.createElement('span');
+        circle.className = 'circle';
+        circles.appendChild(circle);
+        circle.index = i;//用于图片的定位
+        circle.addEventListener('click', clickPoint);
+    }
+    //设置初始时第一个原点颜色及图片位置
+    ul.style.left = '0';
+    circles.children[0].style.backgroundColor = 'rgb(128, 0, 128)';
+    var picWidth = lis[0].offsetWidth;
+    //克隆第一张图片
+    var first = lis[0].cloneNode(true);
+    ul.appendChild(first);
+
+    var num = 0;//用于后面左右点击按钮
+    var count = 0;
+    var flag = true;//节流阀
+    //右侧按钮点击时
+    btn_right.addEventListener('click', move_right);
+
+    function move_right() {
+        if (flag) {
+            flag = false;
+            if (num == circles.children.length) {
+                ul.style.left = '0';
+                num = 0;
+            }
+            num++;
+            animate(ul, -num * picWidth,);
+            count++;
+            if (count == circles.children.length) {
+                count = 0;
+                circles.children[0].style.backgroundColor = 'rgb(128, 0, 128)';
+            }
+            for (var i = 0; i < lis.length; i++) {
+                circles.children[i].style.backgroundColor = '';
+            }
+            circles.children[count].style.backgroundColor = 'rgb(128, 0, 128)';
+        }
+
+    }
+
+    //左侧按钮点击时
+    btn_left.addEventListener('click', move_left)
+
+    function move_left() {
+        if (flag) {
+            flag = !flag;
+            if (num == 0) {
+                num = circles.children.length;
+                ul.style.left = -num * picWidth + 'px';
+            }
+            num--;
+            animate(ul, -num * picWidth,);
+            if (count == 0) {
+                count = circles.children.length;
+                circles.children[count - 1].style.backgroundColor = 'rgb(128, 0, 128)';
+            }
+            count--;
+            for (var i = 0; i < lis.length; i++) {
+                circles.children[i].style.backgroundColor = '';
+            }
+            circles.children[count].style.backgroundColor = 'rgb(128, 0, 128)';
+        }
+    }
+
+    var timer = setInterval(move_right, 4000);
+    view.onmouseover = function () {
+        btn_left.style.left = '5px';
+        btn_right.style.left = '1155px';
+        clearInterval(timer);
+        view.onmouseleave = function () {
+            timer = setInterval(move_right, 4000);
+            btn_left.style.left = '-45px';
+            btn_right.style.left = '1205px';
+        }
+    }
+
+    function clickPoint() {
+        animate(ul, -this.index * picWidth)
+        num = this.index;
+        for (var i = 0; i < lis.length; i++) {
+            circles.children[i].style.backgroundColor = '';
+        }
+        this.style.backgroundColor = 'rgb(128, 0, 128)';
+    }
+
+
+    function animate(obj, target) {
+        clearInterval(obj.timer);
+        obj.timer = setInterval(function () {
+            var step = step = obj.offsetLeft + (target - obj.offsetLeft) / 15;
+            step = target - step > 0 ? Math.ceil(step) : Math.floor(step);
+            if (step == target) {
+                flag = true;
+                clearInterval(obj.timer);
+            }
+            obj.style.left = step + 'px';
+        }, 11.1);
+    }
+</script>
+<!--滚动联动-->
+<script>
+    //回到顶部和滚动联动
+    let toTop = document.querySelector('.toTop');
+    let header = document.querySelector('header');
+    toTop.style.display = 'none';
+    window.addEventListener('scroll', scrollPage)
+
+    function scrollPage() {
+        //处理滚动联动
+        header.className = scrollY > 140 ? 'header' : '';
+        toTop.style.display = scrollY > 1000 ? 'block' : 'none';
+        let h2s = document.querySelectorAll('h2');
+        for (let i = 0; i < h2s.length; i++) {
+            if (pageYOffset < h2s[h2s.length - 1].offsetTop - 60) {
+                if (pageYOffset >= h2s[i].offsetTop - 60 && pageYOffset < h2s[i + 1].offsetTop - 60) {
+                    for (let j = 0; j < h2s.length; j++) {
+                        type_two.children[j].style.color = '#000';
+                    }
+                    type_two.children[i].style.color = 'rgb(128, 0, 128)';
+                }
+            } else {
+                for (let j = 0; j < h2s.length; j++) {
+                    type_two.children[j].style.color = '#000';
+                }
+                type_two.children[h2s.length - 1].style.color = 'rgb(128, 0, 128)';
+            }
+        }
+    }
+
+    toTop.onclick = function () {
+        animateScroll(document.documentElement.scrollTop, 0);
+    }
+    let flag_ = true;
+
+    function kindChange() {
+        header.className = 'header';
+        let h2s = document.querySelectorAll('h2');
+        for (let i = 0; i < h2s.length; i++) {
+            if (this.innerHTML == h2s[i].innerHTML) {
+                if (flag_) {
+                    flag_ = false;
+                    animateScroll(document.documentElement.scrollTop, h2s[i].offsetTop - 59);
+                }
+            }
+        }
+    }
+
+    function animateScroll(from, to) {
+        var timer = setInterval(function () {
+            from = from + (to - from) / 10;
+            from = to - from > 0 ? Math.ceil(from) : Math.floor(from);
+            if (from == to) {
+                flag_ = true;//动画结束时才能再次点击
+                clearInterval(timer);
+            }
+            document.documentElement.scrollTop = from;
+        }, 16.7);
+    }
+</script>
+<!--搜索-->
+<script>
+    let search = document.querySelector('#search');
+    let search_btn = document.querySelector('.search');
+    let search_content = document.querySelector('.search_content');
+    search.onkeyup = function (e) {
+        e.preventDefault();
+        search_content.style.display = search.value == '' ? 'none' : 'block';
+        search_content.innerHTML = '';
+        $ajax_({
+            url: baseUrl + '/api/search',
+            method: 'GET',
+            data: {
+                word: search.value,
+            },
+            success: (data) => {
+                data = JSON.parse(data)
+                for (let i = 0; i < data.length; i++) {
+                    let li = document.createElement('li');
+                    li.innerHTML = data[i].title;
+                    li.setAttribute('data-id', data[i].Id);
+                    li.addEventListener('click', detail);
+                    search_content.appendChild(li);
+                }
+            }
+        })
+    }
+    search_btn.onclick = function () {
+        window.removeEventListener('scroll', loadingPage)
+        search_content.style.display = 'none';
+        $ajax_({
+            url: baseUrl + '/api/search',
+            method: 'GET',
+            data: {
+                word: search.value,
+            },
+            success: (data) => {
+                data = JSON.parse(data);
+                main.style.display = 'none';
+                allGoods.innerHTML = '';
+                renderType_one(data);
+                let lastText = document.querySelector('.page');
+                lastText.innerHTML = '已经到底了!';
+            }
+        })
+    }
+</script>
+<!--添加详情-->
+<script>
+    function toDetail(id) {
+        sessionStorage.setItem('id', id);
+        sessionStorage.setItem('url', 'detail.html');
+        location.href = 'loading.html'
+    }
+
+    function detail() {
+        sessionStorage.setItem('id', this.getAttribute('data-id'));
+        sessionStorage.setItem('url', 'detail.html');
+        location.href = 'loading.html';
+    }
+</script>
+</body>
+</html>
+
+

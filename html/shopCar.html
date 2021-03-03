@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>shopCar</title>
+    <link rel="stylesheet" href="../css/stylesheet.css">
+    <link rel="stylesheet" href="../css/shopCar.css">
+</head>
+<style>
+
+</style>
+<body>
+<header>
+    <div class="container">
+        <div class="top">
+            <div class="logo"><img src="../images/logo.png" alt=""></div>
+            <div class="logo_right">
+                <input type="text" id="search" placeholder="请输入想要的商品">
+                <div class="search"><span class="search_icon iconfont">&#xe65a;</span><span
+                        class="search_text">搜索</span></div>
+            </div>
+        </div>
+        <div class="tab">
+            <ul>
+                <li class="index">首页</li>
+                <li class="shopCar">购物车</li>
+                <li class="unLogin">退出登录</li>
+            </ul>
+        </div>
+        <div class="username"></div>
+    </div>
+</header>
+<div class="back">返回</div>
+<input type="checkbox" class="selectAll">
+<div class="allGoods container">
+</div>
+<div class="container btns">
+    <button class="submit">结算</button>
+    <button class="remove">删除</button>
+    <div class="total"></div>
+    <div class="mask"></div>
+    <div class="sure">
+        <p class="describe">确定删除这些商品?</p>
+        <button class="yes">确定</button>
+        <button class="no">取消</button>
+    </div>
+    <div class="pay">
+        <div><img src="../images/alipay.jpg" alt=""><br><br>支付宝</div>
+        <div><img src="../images/wechatpay.jpg" alt=""><br><br>微信</div>
+        <p class="payAll"></p>
+        <p class="x">x</p>
+    </div>
+</div>
+<script src="../js/underscore.js"></script>
+<!--加载购物车,及返回商品详情-->
+<script>
+    let index = document.querySelector('.index');
+    let back = document.querySelector('.back');
+    let username = document.querySelector('.username');
+    let unLogin = document.querySelector('.unLogin');
+    let allGoods = document.querySelector('.allGoods');
+    let sure = document.querySelector('.sure');
+    let mask = document.querySelector('.mask');
+    let yes = document.querySelector('.yes');
+    let no = document.querySelector('.no');
+    let pay = document.querySelector('.pay');
+    let payAll = document.querySelector('.payAll');
+    let total = document.querySelector('.total');
+    let selectAll = document.querySelector('.selectAll');
+    let x = document.querySelector('.x');
+    index.onclick = () => location.href = 'index.html';
+    unLogin.onclick = function () {
+        sessionStorage.removeItem('token');
+        username.innerHTML = `${sessionStorage.getItem('username')}已经退出登录`;
+        setTimeout(() => location.href = 'index.html', 1500);
+    }
+    back.onclick = () => history.go(-2);
+    $ajax_({
+        url: baseUrl + '/api/shoplist',
+        method: 'GET',
+        data: {
+            token: sessionStorage.getItem('token'),
+        },
+        success: function (data) {
+            data = JSON.parse(data);
+            render(data);
+            if (!data[0]) {
+                selectAll.style.display = 'none';
+            }
+            let remove = document.querySelector('.remove');
+            let submit = document.querySelector('.submit');
+            let goods = document.querySelectorAll('.goods');
+            remove.addEventListener('click', removeGoods);
+            goods.forEach((item) => item.onclick = function () {
+                submitGoods(data);
+                let count_ = 0;
+                goods.forEach((item) => {
+                    if (!item.checked) selectAll.checked = item.checked;
+                    if (item.checked) count_++;
+                })
+                if (count_ == goods.length) selectAll.checked = true;
+            })
+            selectAll.onclick = function () {
+                goods.forEach((item) => item.checked = this.checked)
+                submitGoods(data);
+            }
+            submit.onclick = function () {
+                if (total.innerHTML == '') {
+                    alert('您还没有选择商品!');
+                    return
+                }
+                pay.style.height = '350px';
+                mask.style.height = '100vh';
+                payAll.innerHTML = total.innerHTML;
+            }
+        }
+    })
+
+    function render(data) {
+        let template = '';
+        for (let i = 0; i < data.length; i++) {
+            template += `<li data-id="${data[i].Id}">
+        <input type="checkbox" class="goods" data-id="${data[i].Id}" >
+        <div class="good_image"><img src="${data[i].img_url}" alt=""></div>
+        <div class="supplier">${data[i].supplier}</div>
+        <div class="title" onclick="toDetail(${data[i].Id})">${data[i].title}</div>
+        <div class="price">￥${data[i].price}</div>
+        <div class="handle"><span class="del" data-id="${data[i].Id}">-</span><span class="count">${data[i].count}</span><span class="add" data-id="${data[i].Id}">+</span></div>
+    </li>`
+        }
+        allGoods.innerHTML = template;
+    }
+
+    //查看详情
+    function toDetail(id) {
+        sessionStorage.setItem('id', id);
+        location.href = 'detail.html';
+    }
+</script>
+<!--商品数加减-->
+<script>
+    allGoods.onclick = function (event) {
+        event = event || window.event;
+        let target = event.target || event.srcElement;
+        if (target.innerHTML == '+') {
+            $ajax_({
+                url: baseUrl + '/api/add',
+                method: 'GET',
+                data: {
+                    goodId: target.getAttribute('data-Id'),
+                    token: sessionStorage.getItem('token'),
+                },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.code) target.previousElementSibling.innerHTML++;
+                    add_del();
+                }
+            })
+        }
+        if (target.innerHTML == '-') {
+            if (target.nextElementSibling.innerHTML > 1) {
+                $ajax_({
+                    url: baseUrl + '/api/remove',
+                    method: 'GET',
+                    data: {
+                        goodId: target.getAttribute('data-Id'),
+                        token: sessionStorage.getItem('token'),
+                    },
+                    success: function (data) {
+                        data = JSON.parse(data);
+                        if (data.code) {
+                            target.nextElementSibling.innerHTML > 1 ? target.nextElementSibling.innerHTML-- : target.nextElementSibling.innerHTML = 1;
+                            add_del()
+                        }
+                    }
+                })
+            } else {
+                target.style.cursor = 'not-allowed'
+            }
+        }
+    }
+
+    function add_del() {
+        $ajax_({
+            url: baseUrl + '/api/shoplist',
+            method: 'GET',
+            data: {
+                token: sessionStorage.getItem('token'),
+            },
+            success: function (data) {
+                data = JSON.parse(data);
+                submitGoods(data);
+            }
+        })
+    }
+</script>
+<!--删除&结算-->
+<script>
+    function removeGoods() {
+        if (total.innerHTML == '') {
+            alert('选择您需要删除的商品!');
+            return
+        }
+        let goods = document.querySelectorAll('.goods');
+        sure.style.height = '220px';
+        mask.style.height = '100vh';
+        yes.onclick = function () {
+            goods.forEach((item) => {
+                if (item.checked) {
+                    $ajax_({
+                        url: baseUrl + '/api/del',
+                        method: 'GET',
+                        data: {
+                            goodId: item.getAttribute('data-id'),
+                            token: sessionStorage.getItem('token'),
+                        },
+                        success: function (data) {
+                            data = JSON.parse(data);
+                            if (data.code) item.parentElement.style.display = 'none';
+                            sure.style.height = '0';
+                            mask.style.height = '0';
+                        }
+                    })
+                }
+            })
+        }
+        no.onclick = function () {
+            sure.style.height = '0';
+            mask.style.height = '0';
+        }
+    }
+
+    function submitGoods(data) {
+        let goods = document.querySelectorAll('.goods');
+        let allPrice = 0;
+        let goodNum = 0;
+        goods.forEach((item) => {
+            if (item.checked) {
+                for (let i = 0; i < data.length; i++) {
+                    if (item.getAttribute('data-id') == data[i].Id) {
+                        allPrice += data[i].count * data[i].price;
+                        goodNum += data[i].count;
+                    }
+                }
+            }
+        })
+        total.innerHTML = `已选择${goodNum}件商品,总价:￥${allPrice}元`
+    }
+
+    console.log(x)
+    x.onclick = function () {
+        mask.style.height = '0';
+        pay.style.height = '0';
+    }
+</script>
+</body>
+</html>

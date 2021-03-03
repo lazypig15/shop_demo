@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <link rel="stylesheet" href="../css/stylesheet.css">
+</head>
+<style>
+    .forPwd, .forName {
+        width: 400px;
+        height: 20px;
+        line-height: 20px;
+        text-align: center;
+        font-size: 12px;
+        position: absolute;
+        top: 160px;
+        left: 100px;
+    }
+
+    .forPwd {
+        top: 230px;
+    }
+
+    .forPwd > span {
+        display: inline-block;
+        width: 5px;
+        background-color: orange;
+        border-top-left-radius: 2px;
+        border-top-right-radius: 2px;
+        margin-left: 1px;
+        border: 1px #b0b0b0 solid;
+    }
+
+    .forPwd > span:nth-child(1) {
+        height: 5px;
+    }
+
+    .forPwd > span:nth-child(2) {
+        height: 8px;
+    }
+
+    .forPwd > span:nth-child(3) {
+        height: 11px;
+    }
+</style>
+<body>
+<header>
+    <div class="container">
+        <div class="top">
+            <div class="logo"><img src="../images/logo.png" alt=""></div>
+            <div class="logo_right">
+                <input type="text" id="search" placeholder="请输入想要的商品">
+                <div class="search"><span class="search_icon iconfont">&#xe65a;</span><span class="search_text">搜索</span></div>
+            </div>
+        </div>
+        <div class="tab">
+            <ul>
+                <li class="index">首页</li>
+                <li class="login">登录</li>
+                <li class="register">注册</li>
+            </ul>
+        </div>
+    </div>
+</header>
+<form>
+    <div>
+        <input type="text" placeholder="用户名" id="userName" autocomplete="off">
+        <div class="forName"></div>
+    </div>
+    <div>
+        <input type="password" placeholder="密码" id="pwd">
+        <div class="forPwd"></div>
+    </div>
+    <div>
+        <input type="button" value="注册" id="btn" disabled="disabled">
+    </div>
+    <div class="reminder">注册成功,快去登录吧!</div>
+</form>
+<script src="../js/underscore.js"></script>
+<script src="../js/pageChange.js"></script>
+<script>
+    let userName = document.querySelector('#userName');
+    let pwd = document.querySelector('#pwd');
+    let loginBtn = document.querySelector('#btn');
+    let forName = document.querySelector('.forName');
+    let forPwd = document.querySelector('.forPwd');
+    let flag =false;
+    userName.addEventListener('focus', function () {
+        if (this.value == '') {
+            forName.innerHTML = '用户名为6-12位,只能为数字字母下划线';
+            forName.style.color = 'red';
+            this.style.borderColor = 'red';
+        }
+    });
+    pwd.addEventListener('focus', function () {
+        if (this.value == '') {
+            forPwd.innerHTML = '密码开头大写 6-12 数字字母下划线';
+            forPwd.style.color = 'red';
+            this.style.borderColor = 'red';
+        }
+    });
+    userName.addEventListener('blur', function () {
+        this.value == '' ? forName.innerHTML = '' : '';
+    });
+    pwd.addEventListener('blur', function () {
+        this.value == '' ? forPwd.innerHTML = '' : '';
+    });
+    userName.addEventListener('keyup', verificationName);
+
+    function verificationName() {
+        loginBtn.style.backgroundColor = 'red';
+        let str = this.value;
+        let reg = /[^\w]/;//存在标点为true
+        if (str.length >= 6 && str.length <= 12 && !reg.test(str)) {
+            forName.innerHTML = '格式正确';
+            forName.style.color = '#0aa14c';
+            this.style.borderColor = '#0aa14c';
+            flag=true;
+        } else if (str.length >= 6 && str.length <= 12 && reg.test(str)) {
+            forName.innerHTML = '只能为数字字母下划线';
+            forName.style.color = 'orange';
+            this.style.borderColor = 'orange';
+        } else if (!(str.length >= 6 && str.length <= 12) && !reg.test(str)) {
+            forName.innerHTML = '用户名为6-12位';
+            forName.style.color = 'orange';
+            this.style.borderColor = 'orange';
+        } else {
+            forName.innerHTML = '用户名为6-12位,只能为数字字母下划线';
+            forName.style.color = 'red';
+            this.style.borderColor = 'red';
+        }
+    }
+
+    pwd.addEventListener('keyup', verificationPwd);
+
+    function verificationPwd() {
+        loginBtn.style.backgroundColor = 'red';
+        let str = this.value;
+        let reg = /[^\w]/;//存在标点为true
+        let reg1 = /^[A-Z]/;
+        if (reg1.test(str)) {
+            if (str.length >= 6 && str.length <= 12 && !reg.test(str)) {
+                forPwd.innerHTML = '格式正确';
+                loginBtn.disabled=!flag;
+                loginBtn.style.backgroundColor =flag? '#67c23a':'red';
+                this.style.borderColor = '#0aa14c';
+                forPwd.style.color = '#0aa14c';
+                let reg_EngPCase = /[A-Z_]/;
+                let reg_EngLCase = /[a-z]/;
+                let reg_Num = /[0-9]/;
+                let engPCase = false;
+                let engLCase = false;
+                let num = false;
+                for (let i = 1; i < str.length; i++) {
+                    if (reg_EngPCase.test(str[i])) {
+                        engPCase = true;
+                    } else if (reg_EngLCase.test(str[i])) {
+                        engLCase = true;
+                    } else if (reg_Num.test(str[i])) {
+                        num = true;
+                    }
+                }
+                if (engLCase && engPCase && num) {
+                    forPwd.innerHTML += ' 安全性强';
+                    for (let i = 0; i < 3; i++) {
+                        let span = document.createElement("span");
+                        span.style.backgroundColor = 'green';
+                        forPwd.appendChild(span);
+                    }
+                } else if (engLCase && engPCase && !num || engLCase && !engPCase && num || !engLCase && engPCase && num) {
+                    forPwd.innerHTML += ' 安全性中';
+                    forPwd.style.color = 'orange';
+                    for (let i = 0; i < 3; i++) {
+                        let span = document.createElement("span");
+                        span.style.backgroundColor = 'orange';
+                        forPwd.appendChild(span);
+                    }
+                    forPwd.children[2].style.backgroundColor = '#b0b0b0'
+                } else if (engLCase || engPCase || num) {
+                    forPwd.innerHTML += ' 安全性低';
+                    forPwd.style.color = 'red';
+                    for (let i = 0; i < 3; i++) {
+                        let span = document.createElement("span");
+                        span.style.backgroundColor = 'red';
+                        forPwd.appendChild(span);
+                    }
+                    forPwd.children[1].style.backgroundColor = '#b0b0b0'
+                    forPwd.children[2].style.backgroundColor = '#b0b0b0'
+                }
+            } else if (str.length >= 6 && str.length <= 12 && reg.test(str)) {
+                forPwd.innerHTML = '只能为数字字母下划线';
+                forPwd.style.color = 'orange';
+                this.style.borderColor = 'orange';
+            } else if (!(str.length >= 6 && str.length <= 12) && !reg.test(str)) {
+                forPwd.innerHTML = '密码为6-12位';
+                forPwd.style.color = 'orange';
+                this.style.borderColor = 'orange';
+            } else {
+                forPwd.innerHTML = '密码为6-12位,只能为数字字母下划线';
+                ;
+                forPwd.style.color = 'red';
+                this.style.borderColor = 'orange';
+            }
+        } else {
+            forPwd.innerHTML = '开头为大写';
+            ;
+            forPwd.style.color = 'red';
+            this.style.borderColor = 'red';
+        }
+    }
+
+</script>
+<script>
+    let reminder = document.querySelector('.reminder');
+    loginBtn.onclick = function (e) {
+        e.preventDefault();
+        $ajax_({
+            url: baseUrl + '/api/register',
+            method: 'GET',
+            data: {
+                username: userName.value,
+                password: pwd.value,
+            },
+            success: function (data) {
+                data = JSON.parse(data);
+                console.log(data);
+                render(data)
+            }
+        })
+    }
+
+    function render(data) {
+        if (data.code) {
+            sessionStorage.setItem('token', data.token);
+            loginBtn.value = '正在申请账号';
+            setTimeout(() => {
+                loginBtn.value = '注册成功!';
+                reminder.style.display = 'block';
+                setTimeout(() => {
+                    sessionStorage.setItem('url','login.html')
+                    location.href = 'loading.html';
+                }, 1000);
+            }, 750)
+        } else {
+            reminder.style.display = 'block';
+            reminder.style.color = 'red';
+            reminder.innerHTML = '注册失败,账号已被使用';
+        }
+    }
+</script>
+</body>
+</html>

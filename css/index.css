@@ -1,0 +1,88 @@
+.firstItem {
+    margin-top: 20px;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    line-height: 50px;
+    padding: 10px;
+}
+
+.firstItem li {
+    width: 80px;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    border-radius: 15px;
+    transition: all .7s;
+    cursor: pointer;
+}
+
+.firstItem li:hover{
+    background-color: rgb(128, 0, 128);
+    color: white!important;
+}
+.commodities {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.commodities li {
+    width: 220px;
+    height: 280px;
+    margin: 10px;
+}
+
+.commodities img {
+    width: 220px;
+    height: 220px;
+}
+
+.commodities p {
+    height: 24px;
+    line-height: 24px;
+}
+
+.price {
+    color: #ff6700;
+}
+
+.price ~ span {
+    margin-left: 80px;
+}
+
+.type_two{
+    width: 120px;
+    border: 1px solid #000;
+    border-radius: 4px;
+    position: fixed;
+    left: 20px;
+    top: 45%;
+    text-align: center;
+    z-index: 999;
+    background-color: #efefef;
+    display: none;
+}
+
+.type_two li{
+    padding: 5px;
+    cursor: pointer;
+}
+.type_two li:first-child{
+    color: rgb(128, 0, 128);
+}
+.toTop{
+    width: 60px;
+    height:60px;
+    border-radius: 4px;
+    text-align: center;
+    padding: 1px;
+    background-color: rgb(128, 0, 128);
+    position: fixed;
+    color: white;
+    font-size: 20px;
+    right: 200px;
+    bottom: 100px;
+    z-index: 999;
+    cursor: pointer;
+}

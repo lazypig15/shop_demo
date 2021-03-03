@@ -1,0 +1,57 @@
+.view {
+    overflow: hidden;
+    position: relative;
+    border-radius: 20px;
+    margin-top: 20px;
+}
+
+.ul img, .view, .ul li {
+    width: 1200px;
+    height: 500px;
+}
+
+
+.ul {
+    position: absolute;
+    display: flex;
+}
+
+.button {
+    color: black;
+    width: 40px;
+    height: 40px;
+    outline: none;
+    border-radius: 50%;
+    background-color: rgba(139, 131, 131, 0.56);
+    z-index: 2;
+}
+
+.btn_left, .btn_right {
+    position: absolute;
+    top: 50%;
+    left: -45px;
+    color: rgba(255, 255, 255, 0.66);
+    transition: left 0.5s;
+}
+
+.btn_right {
+    left: 1205px;
+}
+
+.circles {
+    position: absolute;
+    top: 450px;
+    left: 900px;
+    width: 250px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.circle {
+    width: 40px;
+    height: 6px;
+    border-radius: 3px;
+    z-index: 5;
+    background-color: white;
+    cursor: pointer;
+}

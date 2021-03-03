@@ -1,0 +1,135 @@
+.box {
+    width: 1200px;
+    margin: 150px auto;
+    display: flex;
+    justify-content: space-around;
+    position: relative;
+}
+
+.left {
+    border: 1px solid #000;
+    overflow: hidden;
+}
+
+.left, .left img {
+    width: 300px;
+    position: relative;
+    height: 300px;
+}
+
+.right {
+    width: 400px;
+    height: 400px;
+    position: relative;
+}
+
+.largeImg {
+    display: none;
+    position: absolute;
+    top: -100px;
+    left: -200px;
+    width: 600px;
+    background-repeat: no-repeat;
+    height: 600px;
+    background-size: 900px 900px;
+    border: 1px solid #000;
+    overflow: hidden;
+    z-index: 999;
+}
+
+h2, .price_, .button, .desc_, .mark_ {
+    margin: 30px;
+}
+
+.price {
+    color: red;
+}
+
+.button {
+    width: 150px;
+    height: 40px;
+    color: white;
+    border-radius: 8px;
+    background-color: rgb(245, 108, 108);
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+}
+.shopCar{
+    position: absolute;
+    top: 245px;
+    left: 200px;
+    width: 40px;
+    height: 40px;
+    color: red;
+    font-size: 40px!important;
+    cursor: pointer;
+}
+.back {
+    width: 80px;
+    height: 30px;
+    line-height: 25px;
+    text-align: center;
+    color: #8c939d;
+    position: absolute;
+    top: -100px;
+    left: 70px;
+    border-radius: 4px;
+    border: 1px solid #8c939d;
+    cursor: pointer;
+}
+
+.imgList {
+    position: absolute;
+    top: 320px;
+    left: 100px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.imgList li {
+    margin: 0 10px;
+    height: 100px;
+    overflow: hidden;
+}
+
+.imgList li:first-child {
+    border: 2px solid rgb(128, 0, 128);
+}
+
+.imgList img {
+    width: 100px;
+    height: auto;
+
+}
+
+.content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 200px;
+    background-color: #ff6700;
+    opacity: .4;
+    cursor: move;
+    display: none;
+    z-index: 999;
+}
+
+h3{
+    width: 1200px;
+    padding: 10px;
+    margin: 0 auto;
+    border-bottom: 2px rgb(128, 0, 128) dashed;
+}
+.addRem{
+    width: 300px;
+    height: 30px;
+    font-size: 20px;
+    color: #55a532;
+    position: absolute;
+    left: 50%;
+    top: 20%;
+    display: none;
+}
+

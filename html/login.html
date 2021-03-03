@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <link rel="stylesheet" href="../css/stylesheet.css">
+</head>
+<style>
+    .register {
+        color: #000;
+        border-bottom: none;
+    }
+
+    .login {
+        color: #6e496e;
+        border-bottom: 2px solid #6e496e;
+    }
+</style>
+<body>
+<header>
+    <div class="container">
+        <div class="top">
+            <div class="logo"><img src="../images/logo.png" alt=""></div>
+            <div class="logo_right">
+                <input type="text" id="search" placeholder="请输入想要的商品">
+                <div class="search"><span class="search_icon iconfont">&#xe65a;</span><span class="search_text">搜索</span></div>
+            </div>
+        </div>
+        <div class="tab">
+            <ul>
+                <li class="index">首页</li>
+                <li class="login">登录</li>
+                <li class="register">注册</li>
+            </ul>
+        </div>
+    </div>
+</header>
+<form>
+    <div>
+        <input type="text" placeholder="用户名" id="userName">
+    </div>
+    <div>
+        <input type="password" placeholder="密码" id="pwd">
+    </div>
+    <div>
+        <input type="button" value="登录" id="btn">
+    </div>
+    <div class="reminder">密码正确,登陆成功!</div>
+</form>
+<script src="../js/underscore.js"></script>
+<script src="../js/pageChange.js"></script>
+<script>
+    let userName = document.querySelector('#userName');
+    let pwd = document.querySelector('#pwd');
+    let loginBtn = document.querySelector('#btn');
+    let reminder = document.querySelector('.reminder');
+    loginBtn.onclick = function (e) {
+        e.preventDefault();
+        $ajax_({
+            url: baseUrl + '/api/login',
+            method: 'GET',
+            data: {
+                username: userName.value,
+                password: pwd.value,
+            },
+            success: function (data) {
+                data = JSON.parse(data);
+                sessionStorage.setItem('username',data.username);
+                render(data)
+            }
+        })
+    }
+    function render(data) {
+        reminder.innerHTML='';
+        if(data.code){
+            sessionStorage.setItem('token',data.token);
+            loginBtn.value = '正在登录...';
+            setTimeout(()=>{
+                loginBtn.value = '登录成功!';
+                reminder.style.display='block';
+                setTimeout(()=>{
+                    sessionStorage.setItem('url','index.html')
+                    location.href='loading.html';
+                },1000);
+            },750)
+        }else {
+            reminder.style.display='block';
+            reminder.style.color = 'red';
+            reminder.innerHTML='账号或者密码错误';
+        }
+    }
+</script>
+</body>
+</html>

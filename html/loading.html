@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>loading</title>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        background-color: #eeeeee;
+    }
+    body{
+        text-align: center;
+        line-height: 100vh;
+    }
+    img {
+        width: 400px;
+    }
+</style>
+<body>
+<img src="../images/loading.jpg" alt="">
+<script>
+    setTimeout(()=>{
+        location.href=sessionStorage.getItem('url');
+    },750)
+</script>
+</body>
+</html>
